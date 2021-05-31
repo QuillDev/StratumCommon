@@ -5,7 +5,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.DefaultSerializers;
 import io.papermc.paper.text.PaperComponents;
-import moe.quill.StratumCommon.Serialization.StratumSerializer;
+import moe.quill.StratumCommon.Serialization.ISerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.apache.commons.lang.SerializationUtils;
@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-public class StratumSerialization implements StratumSerializer {
+public class StratumSerialization implements ISerializer {
     private static final Kryo kryo = new Kryo();
     private static GsonComponentSerializer componentSerializer;
 

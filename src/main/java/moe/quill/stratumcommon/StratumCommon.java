@@ -1,7 +1,7 @@
 package moe.quill.stratumcommon;
 
 import moe.quill.StratumCommon.KeyManager.IKeyManager;
-import moe.quill.StratumCommon.Serialization.StratumSerializer;
+import moe.quill.StratumCommon.Serialization.ISerializer;
 import moe.quill.stratumcommon.Services.KeyManager;
 import moe.quill.stratumcommon.Services.StratumSerialization;
 import org.bukkit.plugin.ServicePriority;
@@ -20,7 +20,7 @@ public final class StratumCommon extends JavaPlugin {
         final var servicesManager = getServer().getServicesManager();
 
         //Register our services
-        servicesManager.register(StratumSerializer.class, stratumSerialization, this, ServicePriority.Highest);
+        servicesManager.register(ISerializer.class, stratumSerialization, this, ServicePriority.Highest);
         servicesManager.register(IKeyManager.class, keyManager, this, ServicePriority.Highest);
 
     }
