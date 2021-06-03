@@ -1,9 +1,12 @@
 package moe.quill.stratumcommon.Database;
 
 import moe.quill.StratumCommon.Database.DataTypes.MarketData;
+import moe.quill.StratumCommon.Database.DataTypes.RPGPlayer;
 import moe.quill.StratumCommon.Database.IDatabaseService;
 import moe.quill.stratumcommon.db.tables.records.MarketdataRecord;
+import moe.quill.stratumcommon.db.tables.records.RpgplayersRecord;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.UpdateConditionStep;
@@ -14,8 +17,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.UUID;
 
 import static moe.quill.stratumcommon.db.Tables.MARKETDATA;
+import static moe.quill.stratumcommon.db.Tables.RPGPLAYERS;
 
 public class SQLDataService implements IDatabaseService {
 
@@ -123,6 +129,96 @@ public class SQLDataService implements IDatabaseService {
                 marketData.getBuyAmount(),
                 marketData.getSellAmount(),
                 marketData.getBuyAmount() + marketData.getSellAmount()
+        ).execute();
+    }
+
+    @Override
+    public RPGPlayer getPlayer(UUID uuid) {
+        connect();
+        final var result = context
+                .select()
+                .from(RPGPLAYERS)
+                .where(RPGPLAYERS.UUID.eq(uuid))
+                .limit(1)
+                .fetch();
+        if (result.size() == 0) {
+            return null;
+        }
+
+        final var record = result.get(0);
+        int swordsLevel = record.get(RPGPLAYERS.SWORDS_LEVEL);
+        int loggingLevel = record.get(RPGPLAYERS.LOGGING_LEVEL);
+        int miningLevel = record.get(RPGPLAYERS.MINING_LEVEL);
+        int foragingLevel = record.get(RPGPLAYERS.FORAGING_LEVEL);
+        int archeryLevel = record.get(RPGPLAYERS.ARCHERY_LEVEL);
+        int fishingLevel = record.get(RPGPLAYERS.FISHING_LEVEL);
+        float swordsExperience = record.get(RPGPLAYERS.SWORDS_EXPERIENCE, Float.class);
+        float loggingExperience = record.get(RPGPLAYERS.LOGGING_EXPERIENCE, Float.class);
+        float miningExperience = record.get(RPGPLAYERS.MINING_EXPERIENCE, Float.class);
+        float foragingExperience = record.get(RPGPLAYERS.FORAGING_EXPERIENCE, Float.class);
+        float archeryExperience = record.get(RPGPLAYERS.ARCHERY_EXPERIENCE, Float.class);
+        float fishingExperience = record.get(RPGPLAYERS.FISHING_EXPERIENCE, Float.class);
+
+        return new RPGPlayer(
+                uuid,
+                swordsLevel,
+                loggingLevel,
+                miningLevel,
+                foragingLevel,
+                archeryLevel,
+                fishingLevel,
+                swordsExperience,
+                loggingExperience,
+                miningExperience,
+                archeryExperience,
+                fishingExperience,
+                foragingExperience
+        );
+    }
+
+    @Override
+    public void savePlayer(RPGPlayer rpgPlayer) {
+        connect();
+        //Update the existing market data
+        savePlayer(Collections.singletonList(rpgPlayer));
+    }
+
+    @Override
+    public void savePlayer(Collection<RPGPlayer> collection) {
+        connect();
+        final ArrayList<UpdateConditionStep<RpgplayersRecord>> updates = new ArrayList<>();
+        for (final var rpgPlayer : collection) {
+            final var existingData = getPlayer(rpgPlayer.getUuid());
+            //If there is no existing data, create a new entry
+            if (existingData == null) {
+                createPlayer(rpgPlayer.getUuid());
+                continue;
+            }
+            updates.add(context.update(RPGPLAYERS)
+                    .set(RPGPLAYERS.SWORDS_LEVEL, rpgPlayer.getSwordsLevel())
+                    .set(RPGPLAYERS.LOGGING_LEVEL, rpgPlayer.getLoggingLevel())
+                    .set(RPGPLAYERS.MINING_LEVEL, rpgPlayer.getMiningLevel())
+                    .set(RPGPLAYERS.FORAGING_LEVEL, rpgPlayer.getForagingLevel())
+                    .set(RPGPLAYERS.ARCHERY_LEVEL, rpgPlayer.getArcheryLevel())
+                    .set(RPGPLAYERS.FISHING_LEVEL, rpgPlayer.getFishingLevel())
+                    .set(RPGPLAYERS.SWORDS_EXPERIENCE, (double) rpgPlayer.getSwordsExperience())
+                    .set(RPGPLAYERS.LOGGING_EXPERIENCE, (double) rpgPlayer.getLoggingExperience())
+                    .set(RPGPLAYERS.MINING_EXPERIENCE, (double) rpgPlayer.getMiningExperience())
+                    .set(RPGPLAYERS.FORAGING_EXPERIENCE, (double) rpgPlayer.getForagingExperience())
+                    .set(RPGPLAYERS.ARCHERY_EXPERIENCE, (double) rpgPlayer.getArcheryExperience())
+                    .set(RPGPLAYERS.FISHING_EXPERIENCE, (double) rpgPlayer.getFishingExperience())
+                    .where(RPGPLAYERS.UUID.eq(rpgPlayer.getUuid())));
+        }
+        context.batch(updates).execute();
+    }
+
+    @Override
+    public void createPlayer(UUID uuid) {
+        context.insertInto(
+                RPGPLAYERS,
+                RPGPLAYERS.UUID
+        ).values(
+                uuid
         ).execute();
     }
 }
