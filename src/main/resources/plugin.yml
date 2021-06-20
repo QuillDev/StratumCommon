@@ -1,0 +1,5 @@
+name: StratumCommon
+version: ${project.version}
+main: moe.quill.stratumcommon.StratumCommon
+api-version: 1.17
+loadbefore: [ Stratum, StratumSurvival, StratumEconomy, StratumGladiators, TableSalt ]
