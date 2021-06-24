@@ -194,6 +194,7 @@ public class SQLDataService implements IDatabaseService {
                 createPlayer(rpgPlayer.getUuid());
                 continue;
             }
+
             updates.add(context.update(RPGPLAYERS)
                     .set(RPGPLAYERS.SWORDS_LEVEL, rpgPlayer.getSwordsLevel())
                     .set(RPGPLAYERS.LOGGING_LEVEL, rpgPlayer.getLoggingLevel())
